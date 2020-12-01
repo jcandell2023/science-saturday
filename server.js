@@ -8,7 +8,9 @@ app.use(express.static('public'))
 const port = process.env.PORT || 5000
 
 const users = {}
-let day = 1
+let day = 0
+const dailyInfections = [1]
+let dayTimer
 
 function User(id, name) {
     return { id, name, infected: false }
@@ -21,6 +23,12 @@ function getRandUser() {
     return users[randKey]
 }
 
+function newDay() {
+    day++
+    io.emit('infections', { infections: dailyInfections })
+    dailyInfections.push(0)
+}
+
 io.on('connection', (socket) => {
     socket.on('join', (data) => {
         users[socket.id] = User(socket.id, data.name)
@@ -30,6 +38,7 @@ io.on('connection', (socket) => {
             infected.infected = true
             io.to(infected.id).emit('infected')
             console.log('someone is infected')
+            dayTimer = setInterval(newDay, 10000)
         }
     })
 
@@ -37,6 +46,7 @@ io.on('connection', (socket) => {
         if (!users[data.id].infected && data.id != socket.id) {
             users[data.id].infected = true
             io.to(data.id).emit('infected')
+            dailyInfections[day]++
             io.emit('users', { users, day })
         }
     })
