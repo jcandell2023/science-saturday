@@ -21,13 +21,24 @@
                 <p>You are currently healthy!</p>
             </div>
             <div id="infect">
-                <h1>Please select 2 people to infect</h1>
-                <select name="infect1" id="infect1" class="users"></select>
-                <select name="infect2" id="infect2" class="users"></select>
-                <button id="infect-button">Infect</button>
+                <h1>Please infect 2 people</h1>
+                <button class="btn btn-danger" id="infect-button">
+                    Infect 2 other people
+                </button>
             </div>
             <div id="infected">
                 <h1>Wait to see how the rest plays out</h1>
+                <div id="affected"></div>
+            </div>
+            <div id="admin">
+                <h1>Welcome admin</h1>
+                <div class="overflow-auto h-50">
+                    <button id="start-button" class="btn btn-success">Start</button>
+                    <button id="reset-button" disabled class="btn btn-danger">
+                        Reset
+                    </button>
+                    <ul class="users"></ul>
+                </div>
             </div>
             <canvas id="myChart"></canvas>
         </div>

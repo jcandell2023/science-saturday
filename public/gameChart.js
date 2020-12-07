@@ -15,7 +15,7 @@ const chart = new Chart(ctx, {
 })
 
 socket.on('infections', (data) => {
-    chart.data.labels.push(chart.data.labels.length + 1)
+    chart.data.labels = Array.from({ length: data.infections.length }, (x, i) => i + 1)
     chart.data.datasets[0].data = data.infections
     chart.update()
 })

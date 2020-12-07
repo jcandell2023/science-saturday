@@ -4,31 +4,79 @@ const urlParams = new URLSearchParams(window.location.search)
 
 const name = urlParams.get('username')
 
-socket.emit('join', { name })
+if (name === '!!ADMIN!!') {
+    socket.emit('admin-join')
+    $('#healthy').hide()
+    $('#admin').show()
+} else {
+    socket.emit('join', { name })
+}
+
+socket.on('reset', () => {
+    window.location = '/'
+})
 
 $('#name').text(name)
 
 socket.on('users', (data) => {
     $('.users').html('')
     for (let user in data.users) {
-        $('.users').append(
-            $('<option>').text(data.users[user].name).val(data.users[user].id)
+        if (data.users[user].infected) {
+            $('.users').append(
+                $('<li>').text(data.users[user].name).addClass('text-danger')
+            )
+        } else {
+            $('.users').append($('<li>').text(data.users[user].name))
+        }
+    }
+})
+
+socket.on('personAffected', (data) => {
+    if (data.infected) {
+        $('#affected').append($('<p>').text(`You successfully infected ${data.name}`))
+    } else {
+        $('#affected').append(
+            $('<p>').text(
+                `You attempted to infect ${data.name}, but failed because they were already infected`
+            )
         )
     }
 })
 
 $('#infect-button').click(() => {
-    infect($('#infect1').val())
-    infect($('#infect2').val())
+    socket.emit('infect')
     $('#infect').hide()
+    $('#healthy').hide()
     $('#infected').show()
+    $('#affected').html('')
 })
 
 socket.on('infected', () => {
     $('#healthy').hide()
     $('#infect').show()
+    $('#infected').hide()
+})
+
+socket.on('newGame', () => {
+    if (name !== '!!ADMIN!!') {
+        $('#healthy').show()
+        $('#infect').hide()
+        $('#infected').hide()
+    }
 })
 
 function infect(id) {
     socket.emit('infect', { id })
 }
+
+$('#start-button').click(() => {
+    socket.emit('start')
+    $('#start-button').attr('disabled', true)
+    $('#reset-button').attr('disabled', false)
+})
+
+$('#reset-button').click(() => {
+    socket.emit('reset')
+    $('#start-button').attr('disabled', false)
+    $('#reset-button').attr('disabled', true)
+})
