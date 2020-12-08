@@ -17,7 +17,7 @@
     <body>
         <div class="container">
             <div id="healthy">
-                <h1>Welcome, <span id="name"></span></h1>
+                <h1>Welcome, <span class="name"></span></h1>
                 <p>You are currently healthy!</p>
             </div>
             <div id="infect">
@@ -30,17 +30,19 @@
                 <h1>Wait to see how the rest plays out</h1>
                 <div id="affected"></div>
             </div>
+            <div id="charts" class="row">
+                <div class="col col-8"><canvas id="dayChart"></canvas></div>
+                <div class="col col-4"><canvas id="pieChart"></canvas></div>
+            </div>
             <div id="admin">
                 <h1>Welcome admin</h1>
                 <div class="overflow-auto h-50">
                     <button id="start-button" class="btn btn-success">Start</button>
-                    <button id="reset-button" disabled class="btn btn-danger">
-                        Reset
-                    </button>
+                    <button id="stop-button" class="btn btn-warning">Stop</button>
+                    <button id="reset-button" class="btn btn-danger">Reset</button>
                     <ul class="users"></ul>
                 </div>
             </div>
-            <canvas id="myChart"></canvas>
         </div>
         <script
             src="https://code.jquery.com/jquery-3.5.1.slim.min.js"

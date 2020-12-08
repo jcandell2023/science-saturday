@@ -12,9 +12,19 @@ let day = 0
 let dailyInfections = [1]
 let dayTimer = null
 let adminId = null
+let susceptible = []
+let infected = []
+let removed = []
 
 function User(id, name) {
     return { id, name, infected: false }
+}
+
+function getPieData() {
+    let sus = susceptible.length
+    let inf = infected.length
+    let rem = removed.length
+    return [sus, inf, rem]
 }
 
 function getRandUser() {
@@ -33,7 +43,9 @@ function newDay() {
 io.on('connection', (socket) => {
     socket.on('join', (data) => {
         users[socket.id] = User(socket.id, data.name)
-        io.to(adminId).emit('users', { users, day })
+        susceptible.push(users[socket.id])
+        io.emit('pie', getPieData())
+        io.to(adminId).emit('users', { susceptible, infected, removed, day })
     })
 
     socket.on('admin-join', () => {
@@ -59,6 +71,8 @@ io.on('connection', (socket) => {
             io.to(id1).emit('infected')
             dailyInfections[day]++
             socket.emit('personAffected', { name: users[id1].name, infected: true })
+            susceptible = susceptible.filter((user) => user.id != id1)
+            infected.push(users[id1])
         } else {
             socket.emit('personAffected', { name: users[id1].name, infected: false })
         }
@@ -67,20 +81,28 @@ io.on('connection', (socket) => {
             io.to(id2).emit('infected')
             dailyInfections[day]++
             socket.emit('personAffected', { name: users[id2].name, infected: true })
+            susceptible = susceptible.filter((user) => user.id != id2)
+            infected.push(users[id2])
         } else {
             socket.emit('personAffected', { name: users[id2].name, infected: false })
         }
-        io.to(adminId).emit('users', { users, day })
+        removed.push(users[socket.id])
+        infected = infected.filter((user) => user.id !== socket.id)
+        io.to(adminId).emit('users', { susceptible, infected, removed, day })
+        io.emit('pie', getPieData())
     })
 
     socket.on('start', () => {
         if (socket.id == adminId && dayTimer == null) {
-            const infected = getRandUser()
-            users[infected].infected = true
-            io.to(infected).emit('infected')
+            const infectedID = getRandUser()
+            users[infectedID].infected = true
+            infected.push(users[infectedID])
+            susceptible = susceptible.filter((user) => user.id != infectedID)
+            io.to(infectedID).emit('infected')
             console.log('Simulation has started')
             dayTimer = setInterval(newDay, 10000)
-            io.to(adminId).emit('users', { users, day })
+            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+            io.emit('pie', getPieData())
         }
     })
 
@@ -90,10 +112,22 @@ io.on('connection', (socket) => {
             dayTimer = null
             day = 0
             dailyInfections = [1]
+            susceptible = []
+            removed = []
+            infected = []
             for (let id in users) {
                 users[id].infected = false
+                susceptible.push(users[id])
             }
             io.emit('newGame')
+            io.emit('infections', { infections: [] })
+            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+        }
+    })
+
+    socket.on('stop', () => {
+        if (socket.id == adminId) {
+            clearInterval(dayTimer)
         }
     })
 
@@ -102,7 +136,11 @@ io.on('connection', (socket) => {
             adminId = null
         } else {
             delete users[socket.id]
-            io.to(adminId).emit('users', { users, day })
+            susceptible = susceptible.filter((user) => user.id != socket.id)
+            infected = infected.filter((user) => user.id != socket.id)
+            removed = removed.filter((user) => user.id != socket.id)
+            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+            io.emit('pie', getPieData())
         }
     })
 })

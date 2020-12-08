@@ -16,18 +16,24 @@ socket.on('reset', () => {
     window.location = '/'
 })
 
-$('#name').text(name)
+$('.name').text(name)
 
 socket.on('users', (data) => {
     $('.users').html('')
-    for (let user in data.users) {
-        if (data.users[user].infected) {
-            $('.users').append(
-                $('<li>').text(data.users[user].name).addClass('text-danger')
-            )
-        } else {
-            $('.users').append($('<li>').text(data.users[user].name))
-        }
+    for (let user in data.infected) {
+        $('.users').append(
+            $('<li>').text(data.infected[user].name).addClass('text-danger')
+        )
+    }
+    for (let user in data.susceptible) {
+        $('.users').append(
+            $('<li>').text(data.susceptible[user].name).addClass('text-success')
+        )
+    }
+    for (let user in data.removed) {
+        $('.users').append(
+            $('<li>').text(data.removed[user].name).addClass('text-primary')
+        )
     }
 })
 
@@ -71,12 +77,12 @@ function infect(id) {
 
 $('#start-button').click(() => {
     socket.emit('start')
-    $('#start-button').attr('disabled', true)
-    $('#reset-button').attr('disabled', false)
+})
+
+$('#stop-button').click(() => {
+    socket.emit('stop')
 })
 
 $('#reset-button').click(() => {
     socket.emit('reset')
-    $('#start-button').attr('disabled', false)
-    $('#reset-button').attr('disabled', true)
 })
