@@ -99,11 +99,11 @@ io.on('connection', (socket) => {
             } else {
                 socket.emit('personAffected', { name: users[id2].name, infected: false })
             }
-            removed.push(users[socket.id])
-            infected = infected.filter((user) => user.id !== socket.id)
-            io.to(adminId).emit('users', { susceptible, infected, removed, day })
-            io.emit('pie', getPieData())
         }
+        removed.push(users[socket.id])
+        infected = infected.filter((user) => user.id !== socket.id)
+        io.to(adminId).emit('users', { susceptible, infected, removed, day })
+        io.emit('pie', getPieData())
     })
 
     socket.on('start', () => {
