@@ -58,38 +58,52 @@ io.on('connection', (socket) => {
     })
 
     socket.on('infect', () => {
-        let id1 = getRandUser()
-        while (id1 == socket.id) {
-            id1 = getRandUser()
-        }
-        let id2 = getRandUser()
-        while (id2 == socket.id || id1 === id2) {
-            id2 = getRandUser()
-        }
-        if (!users[id1].infected) {
-            users[id1].infected = true
-            io.to(id1).emit('infected')
-            dailyInfections[day]++
-            socket.emit('personAffected', { name: users[id1].name, infected: true })
-            susceptible = susceptible.filter((user) => user.id != id1)
-            infected.push(users[id1])
+        if (Object.keys(users).length < 5) {
+            let id = getRandUser()
+            if (!users[id].infected) {
+                users[id].infected = true
+                io.to(id).emit('infected')
+                dailyInfections[day]++
+                socket.emit('personAffected', { name: users[id].name, infected: true })
+                susceptible = susceptible.filter((user) => user.id != id)
+                infected.push(users[id])
+            } else {
+                socket.emit('personAffected', { name: users[id].name, infected: false })
+            }
         } else {
-            socket.emit('personAffected', { name: users[id1].name, infected: false })
+            let id1 = getRandUser()
+            while (id1 == socket.id) {
+                id1 = getRandUser()
+            }
+            let id2 = getRandUser()
+            while (id2 == socket.id || id1 === id2) {
+                id2 = getRandUser()
+            }
+            if (!users[id1].infected) {
+                users[id1].infected = true
+                io.to(id1).emit('infected')
+                dailyInfections[day]++
+                socket.emit('personAffected', { name: users[id1].name, infected: true })
+                susceptible = susceptible.filter((user) => user.id != id1)
+                infected.push(users[id1])
+            } else {
+                socket.emit('personAffected', { name: users[id1].name, infected: false })
+            }
+            if (!users[id2].infected) {
+                users[id2].infected = true
+                io.to(id2).emit('infected')
+                dailyInfections[day]++
+                socket.emit('personAffected', { name: users[id2].name, infected: true })
+                susceptible = susceptible.filter((user) => user.id != id2)
+                infected.push(users[id2])
+            } else {
+                socket.emit('personAffected', { name: users[id2].name, infected: false })
+            }
+            removed.push(users[socket.id])
+            infected = infected.filter((user) => user.id !== socket.id)
+            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+            io.emit('pie', getPieData())
         }
-        if (!users[id2].infected) {
-            users[id2].infected = true
-            io.to(id2).emit('infected')
-            dailyInfections[day]++
-            socket.emit('personAffected', { name: users[id2].name, infected: true })
-            susceptible = susceptible.filter((user) => user.id != id2)
-            infected.push(users[id2])
-        } else {
-            socket.emit('personAffected', { name: users[id2].name, infected: false })
-        }
-        removed.push(users[socket.id])
-        infected = infected.filter((user) => user.id !== socket.id)
-        io.to(adminId).emit('users', { susceptible, infected, removed, day })
-        io.emit('pie', getPieData())
     })
 
     socket.on('start', () => {
