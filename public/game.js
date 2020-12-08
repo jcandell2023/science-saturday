@@ -35,6 +35,7 @@ socket.on('users', (data) => {
             $('<li>').text(data.removed[user].name).addClass('text-primary')
         )
     }
+    $('#numPeople').text(data.num)
 })
 
 socket.on('personAffected', (data) => {

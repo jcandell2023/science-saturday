@@ -45,7 +45,12 @@ io.on('connection', (socket) => {
         users[socket.id] = User(socket.id, data.name)
         susceptible.push(users[socket.id])
         io.emit('pie', getPieData())
-        io.to(adminId).emit('users', { susceptible, infected, removed, day })
+        io.to(adminId).emit('users', {
+            susceptible,
+            infected,
+            removed,
+            num: Object.keys(users).length,
+        })
     })
 
     socket.on('admin-join', () => {
@@ -53,7 +58,12 @@ io.on('connection', (socket) => {
             socket.emit('reset')
         } else {
             adminId = socket.id
-            socket.emit('users', { users, day })
+            io.to(adminId).emit('users', {
+                susceptible,
+                infected,
+                removed,
+                num: Object.keys(users).length,
+            })
         }
     })
 
@@ -102,7 +112,12 @@ io.on('connection', (socket) => {
         }
         removed.push(users[socket.id])
         infected = infected.filter((user) => user.id !== socket.id)
-        io.to(adminId).emit('users', { susceptible, infected, removed, day })
+        io.to(adminId).emit('users', {
+            susceptible,
+            infected,
+            removed,
+            num: Object.keys(users).length,
+        })
         io.emit('pie', getPieData())
     })
 
@@ -115,7 +130,12 @@ io.on('connection', (socket) => {
             io.to(infectedID).emit('infected')
             console.log('Simulation has started')
             dayTimer = setInterval(newDay, 10000)
-            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+            io.to(adminId).emit('users', {
+                susceptible,
+                infected,
+                removed,
+                num: Object.keys(users).length,
+            })
             io.emit('pie', getPieData())
         }
     })
@@ -135,7 +155,12 @@ io.on('connection', (socket) => {
             }
             io.emit('newGame')
             io.emit('infections', { infections: [] })
-            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+            io.to(adminId).emit('users', {
+                susceptible,
+                infected,
+                removed,
+                num: Object.keys(users).length,
+            })
         }
     })
 
@@ -153,7 +178,12 @@ io.on('connection', (socket) => {
             susceptible = susceptible.filter((user) => user.id != socket.id)
             infected = infected.filter((user) => user.id != socket.id)
             removed = removed.filter((user) => user.id != socket.id)
-            io.to(adminId).emit('users', { susceptible, infected, removed, day })
+            io.to(adminId).emit('users', {
+                susceptible,
+                infected,
+                removed,
+                num: Object.keys(users).length,
+            })
             io.emit('pie', getPieData())
         }
     })
